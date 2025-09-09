@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Backend API (CodeIgniter 4)
+  backend:
+    image: webdevops/php-apache-dev:8.1-alpine
+    working_dir: /app
+    environment:
+      - WEB_DOCUMENT_ROOT=/app/public
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:80"
+    depends_on:
+      - mariadb
+      - s3ninja
+
+  # Base de datos MariaDB
+  mariadb:
+    image: mariadb:10.4.22
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: document_workflowdb
+      MYSQL_USER: document_workflow
+      MYSQL_PASSWORD: document_workflow
+
+  # S3 Ninja (emulador AWS S3)
+  s3ninja:
+    image: scireum/s3-ninja:latest
+    ports:
+      - "9000:9000"
+    volumes:
+      - s3_data:/home/sirius/data
+
+  # phpMyAdmin (opcional)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+    depends_on:
+      - mariadb
+
+volumes:
+  mariadb_data:
+  s3_data:
